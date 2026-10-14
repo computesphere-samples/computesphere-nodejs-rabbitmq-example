@@ -54,8 +54,9 @@ async function connect(setup) {
       await sleep(5000);
       continue;
     }
+    let conn = null;
     try {
-      const conn = await amqp.connect(AMQP_URL, tls ? { ca } : {});
+      conn = await amqp.connect(AMQP_URL, tls ? { ca } : {});
       conn.on("error", (err) => console.error("rabbitmq:", err.message));
       const closed = new Promise((r) => conn.once("close", r));
       await setup(conn);
@@ -64,6 +65,7 @@ async function connect(setup) {
       console.log("rabbitmq connection closed; reconnecting");
     } catch (err) {
       console.error("rabbitmq connect failed:", err.message);
+      if (conn) await conn.close().catch(() => {});
     }
     await sleep(5000);
   }
@@ -119,6 +121,9 @@ function send(text) {
       replyTo: REPLY_TO,
       contentType: "application/json",
       persistent: true,
+      // Nobody waits for the answer after the timeout, so a job the worker
+      // hasn't taken by then is dropped rather than left on the queue.
+      expiration: String(JOB_TIMEOUT_MS),
     });
   });
 }
