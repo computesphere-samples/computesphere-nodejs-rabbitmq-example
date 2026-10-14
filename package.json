@@ -1,0 +1,11 @@
+{
+  "name": "computesphere-nodejs-rabbitmq-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A web service that hands jobs to a worker through RabbitMQ.",
+  "main": "server.js",
+  "license": "MIT",
+  "scripts": { "start": "node server.js", "worker": "ROLE=worker node server.js" },
+  "engines": { "node": ">=22" },
+  "dependencies": { "amqplib": "0.10.9" }
+}
